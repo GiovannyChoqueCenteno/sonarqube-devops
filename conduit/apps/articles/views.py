@@ -11,6 +11,8 @@ from .renderers import ArticleJSONRenderer, CommentJSONRenderer
 from .serializers import ArticleSerializer, CommentSerializer, TagSerializer
 
 
+not_exists = 'An article with this slug does not exist.'
+
 class ArticleViewSet(mixins.CreateModelMixin, 
                      mixins.ListModelMixin,
                      mixins.RetrieveModelMixin,
@@ -21,7 +23,6 @@ class ArticleViewSet(mixins.CreateModelMixin,
     permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (ArticleJSONRenderer,)
     serializer_class = ArticleSerializer
-
     def get_queryset(self):
         queryset = self.queryset
 
@@ -74,7 +75,7 @@ class ArticleViewSet(mixins.CreateModelMixin,
         try:
             serializer_instance = self.queryset.get(slug=slug)
         except Article.DoesNotExist:
-            raise NotFound('An article with this slug does not exist.')
+            raise NotFound(not_exists)
 
         serializer = self.serializer_class(
             serializer_instance,
@@ -90,7 +91,7 @@ class ArticleViewSet(mixins.CreateModelMixin,
         try:
             serializer_instance = self.queryset.get(slug=slug)
         except Article.DoesNotExist:
-            raise NotFound('An article with this slug does not exist.')
+            raise NotFound(not_exists)
             
         serializer_data = request.data.get('article', {})
 
@@ -132,7 +133,7 @@ class CommentsListCreateAPIView(generics.ListCreateAPIView):
         try:
             context['article'] = Article.objects.get(slug=article_slug)
         except Article.DoesNotExist:
-            raise NotFound('An article with this slug does not exist.')
+            raise NotFound(not_exists)
 
         serializer = self.serializer_class(data=data, context=context)
         serializer.is_valid(raise_exception=True)
